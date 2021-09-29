@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 
 namespace DrillingBuildLibrary
 {
-    class ToXML
+    public static class ToXML
     {
         public static void SerialzeToXML<T>(string filePath,T data )
         {

@@ -477,6 +477,9 @@ namespace DrillingBuildLibrary
                 workbook = new HSSFWorkbook();
 
             //
+            
+
+            //
             ICellStyle heardStyle = workbook.CreateCellStyle();//声明style1对象，设置Excel表格的样式
             ICellStyle bodyStyle = workbook.CreateCellStyle();
 
@@ -499,20 +502,26 @@ namespace DrillingBuildLibrary
             heardStyle.VerticalAlignment = NPOI.SS.UserModel.VerticalAlignment.Center;
 
             //heardStyle.BorderLeft = BorderStyle.Thick;
-            //heardStyle.BorderRight = BorderStyle.Thick;
+            //heardStyle.BorderRight = BorderStyle.Medium;
             //heardStyle.BorderTop = BorderStyle.Thick;
-            //heardStyle.BorderBottom = BorderStyle.Thick;
+            //heardStyle.BorderBottom = BorderStyle.Medium;
 
             //设置主体样式
             bodyStyle.SetFont(bodyFont);
             //设置主体对齐方式
-            bodyStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Justify;//两端自动对齐（自动换行）
+            bodyStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;//两端自动对齐（自动换行）
             bodyStyle.VerticalAlignment = NPOI.SS.UserModel.VerticalAlignment.Center;
 
-            //bodyStyle.BorderLeft = BorderStyle.Thick;
-            //bodyStyle.BorderRight = BorderStyle.Thick;
-            //bodyStyle.BorderTop = BorderStyle.Thick;
-            //bodyStyle.BorderBottom= BorderStyle.Thick;
+            //使用没有的颜色，不需要覆盖掉原来的色板
+            bodyStyle.FillForegroundColor = 0;
+            bodyStyle.FillPattern = FillPattern.SolidForeground;
+            ((XSSFColor)bodyStyle.FillForegroundColorColor).SetRgb(new byte[] { 200, 200, 200 });
+
+            bodyStyle.LeftBorderColor = NPOI.HSSF.Util.HSSFColor.Black.Index;
+            bodyStyle.BorderTop = BorderStyle.Medium;
+            bodyStyle.BorderBottom= BorderStyle.Medium;
+
+      
 
             FileStream fs = null;
             IRow row = null;
@@ -535,15 +544,20 @@ namespace DrillingBuildLibrary
                     CellRangeAddress region = new CellRangeAddress(0, 0, 0, columnCount-1);
                     sheet.AddMergedRegion(region);
                     row = sheet.CreateRow(0);
+                    row.HeightInPoints = 28;
                     ICell heardCell = row.CreateCell(0);
+                    ICell tialCell = row.CreateCell(columnCount - 1);
                     heardCell.SetCellValue(sArray[1]);
                     
+
                     //模板样式
                     heardCell.CellStyle = heardStyle;
-
+                    tialCell.CellStyle = heardStyle;
+                    tialCell.CellStyle.BorderRight = BorderStyle.Medium;
+                    heardCell.CellStyle.BorderLeft = BorderStyle.Medium;
                     //设置列头
                     row = sheet.CreateRow(1);//excel第二行行设为列头
-
+                    row.HeightInPoints = 20;
                     //下拉框个数
                     int dropDownListCout = 1;
                     for (int c = 0; c < columnCount; c++)
@@ -564,21 +578,32 @@ namespace DrillingBuildLibrary
                         
                         //向表中增加值
                         cell.SetCellValue(columnNameArray[1]);
-                       
 
+                        if (c == columnCount - 1)
+                            bodyStyle.BorderRight = BorderStyle.Medium;
 
                         //设置主体样式
                         cell.CellStyle = bodyStyle;
+                      
                         sheet.AutoSizeColumn(c,true);
 
                     }
-                    using (fs = File.OpenWrite(strFile))
+                    try
+                    {
+                        using (fs = File.OpenWrite(strFile))
+                        {
+
+                            workbook.Write(fs);//向打开的这个xls文件中写入数据
+
+                            result = true;
+                        }
+                    }
+                    catch (Exception e )
                     {
 
-                        workbook.Write(fs);//向打开的这个xls文件中写入数据
-
-                        result = true;
+                        throw e ;
                     }
+
 
 
                 }
@@ -608,30 +633,39 @@ namespace DrillingBuildLibrary
         /// <param name="sheetindex"></param>
         public static void SetCellDropdownList(IWorkbook workbook, ISheet sheet, string name, int firstcol, int lastcol, string[] vals, int sheetindex)
         {
-            //先创建一个Sheet专门用于存储下拉项的值
-            ISheet sheet2 = workbook.CreateSheet(name);
-            //隐藏
-            workbook.SetSheetHidden(sheetindex, SheetState.VeryHidden);
-            int index = 0;
-            foreach (var item in vals)
+            try
             {
-                sheet2.CreateRow(index).CreateCell(0).SetCellValue(item);
-                index++;
-            }
-            //创建的下拉项的区域：
-            var rangeName = name+"Rang";
-            IName range = workbook.CreateName();
-            range.RefersToFormula = name + "!$A$1:$A$" + index;
-            range.NameName = rangeName;
-            CellRangeAddressList regions = new CellRangeAddressList(2, 65535, firstcol, lastcol);//约束范围
+                //先创建一个Sheet专门用于存储下拉项的值
+                ISheet sheet2 = workbook.CreateSheet(name);
+                //隐藏
+                workbook.SetSheetHidden(sheetindex, SheetState.VeryHidden);
+                int index = 0;
+                foreach (var item in vals)
+                {
+                    sheet2.CreateRow(index).CreateCell(0).SetCellValue(item);
+                    index++;
+                }
+                //创建的下拉项的区域：
+                var rangeName = name + "Rang";
+                IName range = workbook.CreateName();
+                range.RefersToFormula = name + "!$A$1:$A$" + index;
+                range.NameName = rangeName;
+                CellRangeAddressList regions = new CellRangeAddressList(2, 60000, firstcol, lastcol);//约束范围
 
-            ISheet sheet1 = workbook.GetSheetAt(0);//获得第一个工作表
-            XSSFDataValidationHelper helper = new XSSFDataValidationHelper((XSSFSheet)sheet1);//获得一个数据验证Helper
-            IDataValidation validation = helper.CreateValidation(helper.CreateFormulaListConstraint($"{rangeName}"), regions);//创建一个特定约束范围内的公式列表约束（即第一节里说的"自定义"方式）
-            validation.CreateErrorBox("错误", "请按右侧下拉箭头选择!");//不符合约束时的提示
-            validation.ShowErrorBox = true;//显示上面提示 = True
-            sheet1.AddValidationData(validation);//添加进去
-            sheet1.ForceFormulaRecalculation = true;
+                ISheet sheet1 = workbook.GetSheetAt(0);//获得第一个工作表
+                XSSFDataValidationHelper helper = new XSSFDataValidationHelper((XSSFSheet)sheet1);//获得一个数据验证Helper
+                IDataValidation validation = helper.CreateValidation(helper.CreateFormulaListConstraint($"{rangeName}"), regions);//创建一个特定约束范围内的公式列表约束（即第一节里说的"自定义"方式）
+                validation.CreateErrorBox("错误", "请按右侧下拉箭头选择!");//不符合约束时的提示
+                validation.ShowErrorBox = true;//显示上面提示 = True
+                sheet1.AddValidationData(validation);//添加进去
+                sheet1.ForceFormulaRecalculation = true;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+            
         }
         /// <summary>
         /// Excel导入成Datable

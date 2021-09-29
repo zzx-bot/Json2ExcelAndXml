@@ -25,7 +25,8 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Button Content="读取建模文件"    Height="30"  Margin="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Click="ReadbuildlibraryData"/>
+        <Button Content="读取建模文件"  Margin="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Click="ReadbuildlibraryData"/>
+        <Button Content="读取要素文件" Grid.Row="1" Grid.Column="0"  Margin="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Click="ImportFeatureClassFromWord"/>
         <!--<Button  Grid.Row="1" Grid.Column="0" Content="导入字典（wrod）"  Margin="2"     Height="30" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Click="ImportDictFromWord"/>
         <Button  Grid.Row="2" Grid.Column="0" Content="导入表（wrod）"  Margin="2"     Height="30" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Click="ImportEntityFromWord"/>-->
 
@@ -38,8 +39,8 @@
         <!--<Button Grid.Column="1" Grid.Row="0" Content="另存为" Margin="2"  HorizontalContentAlignment="Center" Click="SaveAsbuildlibraryData" />
         <Button Grid.Column="1" Grid.Row="1" Content="导出字典表" Margin="2"  HorizontalContentAlignment="Center" Click="ExportDictToExcel" />-->
         <Button Grid.Column="1" Grid.Row="0" Content="导出录入模板" Margin="2"  HorizontalContentAlignment="Center" Click="ExportModelToExcel" />
-        <Button Grid.Column="2" Grid.Row="0" Content="导出Xml模板" Margin="2"  HorizontalContentAlignment="Center" Click="ToXml" />
-
+        <Button Grid.Column="2" Grid.Row="0" Content="导出Xml模板" Margin="2"  HorizontalContentAlignment="Center" Click="ExportModelToXml" />
+        <Button Grid.Column="3" Grid.Row="0" Content="导出Shp模板" Margin="2"  HorizontalContentAlignment="Center" Click="ExportModelToShp" />
 
         <!--<Button Grid.Column="2" Grid.Row="0" Content="英文字段去空格" Margin="2"  HorizontalContentAlignment="Center" Click="ClearBlank" />
         <Button Grid.Column="2" Grid.Row="1" Content="英文字段首字母大写" Margin="2"  HorizontalContentAlignment="Center" Click="FirstLetter" />
