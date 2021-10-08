@@ -155,17 +155,51 @@ namespace DrillingBuildLibrary
 
             Stream stream = File.OpenRead(wordFile);
             XWPFDocument doc = new XWPFDocument(stream);
-            var paragraphs = doc.Paragraphs.Where(r => r.Style == "2").ToList();
+
+            List<XWPFParagraph> paragraphs = new List<XWPFParagraph>();
+            //var paragraphs = doc.Paragraphs.Select(r => r?.ParagraphText[0]=='表').ToList();
+            string[] nowKeys = {"cs", "QXAZFG02", "DLAKZD01", "DLBHLU01", "DLBHPO01", "DLCCZQ01", "DLCJMD01", "DLCSSH01", "DLDJTO01", "DLFXZQ01", "DLFXZX01", "ZYEDYJ01", "DLGDMQ01", "QYCHSY1", "QYCQRY01", "QYDJDS01", "QYDJFB01", "QYDCHF01", "QYDCDW01", "QYDSWC01", "QYDMDC01", "QYDCXC01", "QYDSJC01", "QYDDJX01", "QYDTCJ01", "QYDSSC01", "QYDPMX01", "QYDGZX01", "QYFDCX01", "QYFZZX01", "QYFGZD01", "QYGGQH01", "QYGGDM01", "QYGGHD01", "GCAQYW01", "GCACQW01", "GCADJW01", "GCAJAW01", "GCAGCQ01", "GCADJT01", "GCARTF01", "GCASTF01", "GCARGT01", "GCATYT01", "GCAYMX01", "GCACFD01", "GCACHD01", "GCAYTG01", "GCAYJG01", "GCATGL01", "GCATJL01", "GCADXJ01", "GCAJZJ01", "GCATDJ01", "GCARTP01",
+"GCAJSY01", "SWAKCL01", "SWAYSZ01", "SWAYSG01", "SWAXTH01", "SWASYD01", "SWALXH01", "SWAFSH01", "SWASHX01", "SWAHSZ01", "SWADBG01", "SWADBX01", "SWAQSW01", "SWACYS01", "SWAQYZ01", "SWACYZ01", "SWAQDZ01", "SWASDZ01", "SWATZX01", "SWAKHD01", "SWAJSR01", "SWAJSZ01", "SWAGSH01", "SWAHQS01", "SWASTX01", "SWAYLX01", "SWACSX01", "SWAGSD01", "SWAXST01", "SWAWDS01", "SWABZM01", "SWAKZM01", "SWAXKM01", "SWAFKL01", "SWAQLM01", "SWAQLX01", "SWASKL01", "SWAZLQ01", "SWAFSX01", "SWAWRC01", "SWAFWX01", "SWAWZP01", "SWACRX01", "SWADGC01", "SWAHSC01", "SWAGNP01", "SWASWD01", "HJADCQ01", "HJAYZH01", "HJATDW01", "HJAHLW01", "HJAHBW01", "HJAWFX01", "HJAWFZ01", "HJAWZP01", "HJBDZL01", "HJBDCJ01", "HJBLCJ01", "HJBCJD01", "HJBYCD01", "HJBFXD01", "HJBLFY01", "HJBXWQ01", "HJBEFX01", "HJBHYC01", "HJBFZG01", "HJCSTL01", "HJCSMH01", "HJCTLX01", "HJCSDQ01", "HJCDFB01", "HJCHQF01", "HJCHAX01", "HJCBSY01", "HJCDGH01", "HJCSZP01", "WLBHJX01", "WLBZTS01", "WLBZJX01", "WLBZSF01", "WLDDFY01", "WLGDZL01", "WLGTDS01", "HXACMP01", "HXAYHX01", "HXAYYC01", "HXAYZY01", "HXBQTX01", "HXBQTY01", "HXBQZY01", "HXBBCX01", "HXBBCY01", "HXBBZY01", "HXBSYX01", "HXBSYC01", "HXBSZY01", "HXBTWP01", "HXBTSP01", "HXBTZL01", "HXBTYP01", "HXBTFQ01", "HXBTDH01", "HXBTZP01", "HXBFSX01", "HXBSHY01", "HXCHHX01", "HXCHYC01", "HXCHZY01", "HXCHWP01",
+"HXEZHX01", "HXEZHY01", "HXEZHZ01", "HXENCP01", "HXENZW01", "HXFSHD01", "HXFSHY01", "HXFSHZ01", "HXFHSF01", "HXFSZL01", "YGBTGZ01", "YGBCFB01", "ZYAKKC01", "ZYAGKQ01", "ZYAGKD01", "ZYAJSK01", "ZYAMTF01", "ZYBSZY01", "ZYBDXS01", "ZYBKQS01", "ZYDRZY01", "ZYDRSW01", "ZYDEKQ01", "ZYDZQL01", "ZYDRZL01", "ZYDQRX01", "ZYDRYC01", "ZYDRTD01", "ZYDRGH01", "ZYDBSY01", "ZYDGSY01", "ZYDBZY01", "ZYDGZY01", "ZYDBPJ01", "ZYDGPJ01", "ZYEDGY01", "ZYFLXZ01", "ZYFSYX01", "ZYFKFG01"};
+
+            List<string> lostKeys=new List<string> ();
+            foreach (var para in doc.Paragraphs)
+            {
+                if (para.ParagraphText.Length > 0 && para.ParagraphText[0] == '表')
+                {
+                    paragraphs.Add(para);
+                    foreach (var key in nowKeys)
+                    {
+                        if(para.ParagraphText.Contains(key))
+                            lostKeys.Add(key);
+                    }
+                   
+                }
+
+
+            }
+
+            List<string> L = new List<string>();
+            foreach (var key in nowKeys)
+            {
+                if (!lostKeys.Contains(key))
+                    L.Add(key);
+            }
+            
+
+
             var tables = doc.Tables;
+            var package = doc.Package;
+
             for (int i = 0; i < tables.Count; i++)
             {
                 //var paragraph = paragraphs[i];
                 var table = tables[i];
+                //if(nowKeys.Contains(table)
 
-                
                 //entity.defKey = paragraph.Text;
                 //entity.defName = paragraph.Text;
-                
+
 
                 for (int j = 1; j < table.Rows.Count; j++)
                 {

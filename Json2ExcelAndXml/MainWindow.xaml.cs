@@ -118,8 +118,8 @@ namespace Json2ExcelAndXml
 
 
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            { 
-                
+            {
+
                 foreach (var group in _databaseModel.viewGroups)
                 {
                     //新建文件夹
@@ -136,15 +136,15 @@ namespace Json2ExcelAndXml
 
                 foreach (var entity in _databaseModel.entities)
                 {
-                    
+
                     DataTable dataTable = new DataTable();
 
                     //前缀名；excel文件路径
-                    string preName="", filePath;
+                    string preName = "", filePath;
                     //找到每个表的前缀分类
                     foreach (var group in _databaseModel.viewGroups)
                         if (group.refEntities.Contains(entity.defKey))
-                            preName = group.defKey+"模板";
+                            preName = group.defKey + "模板";
 
                     if (entity.defName.Contains("/"))
                         entity.defName = entity.defName.Replace("/", "");
@@ -161,7 +161,7 @@ namespace Json2ExcelAndXml
                     filePath = System.IO.Path.Combine(pathRoot, preName, dataTable.TableName + ".xlsx");
 
                     //下拉框字典
-                    Dictionary<string, string[]> dropDownLists=new Dictionary<string, string[]>();
+                    Dictionary<string, string[]> dropDownLists = new Dictionary<string, string[]>();
                     foreach (var field in entity.fields)
                     {
                         if (!dataTable.Columns.Contains(field.defKey + "-" + field.defName))
@@ -181,7 +181,7 @@ namespace Json2ExcelAndXml
                                 {
                                     vs[i] = (dict.items[i].defKey + dict.items[i].defName);
                                 }
-                                if(!dropDownLists.ContainsKey(dict.defKey))
+                                if (!dropDownLists.ContainsKey(dict.defKey))
                                     dropDownLists.Add(dict.defKey, vs);
                             }
                         }
@@ -219,7 +219,7 @@ namespace Json2ExcelAndXml
                 foreach (Entity entity in _databaseModel.entities)
                 {
                     //xml文件名前缀
-                    string preName="";
+                    string preName = "";
                     //找到每个表的前缀分类
                     foreach (var group in _databaseModel.viewGroups)
                         if (group.refEntities.Contains(entity.defKey))
@@ -232,20 +232,20 @@ namespace Json2ExcelAndXml
 
                     //实例化模板
                     DrillTemplate template = new DrillTemplate();
-                    template.TemplateName=entity.defName;
+                    template.TemplateName = entity.defName;
                     template.TemplateType = preName;
                     template.IsInfoTable = true;
 
                     template.TemplateContents = new List<DrillTemplateTemplateContent>();
 
-                    for (int i=0;i<entity.fields.Count;i++ )
+                    for (int i = 0; i < entity.fields.Count; i++)
                     {
 
                         Field field = entity.fields[i];
 
                         DrillTemplateTemplateContent item = new DrillTemplateTemplateContent();
 
-                        string dropDownComment="";
+                        string dropDownComment = "";
                         if (_databaseModel.dicts.Exists(d => d.defKey == field.defKey))
                         {
                             Dict dict;//
@@ -265,23 +265,23 @@ namespace Json2ExcelAndXml
                         {
                             item.FiledDescription = field.comment;
                         }
-                        
+
                         item.FieldName = entity.fields[i].defName;
 
                         char col = (char)('A' + i);
-                        item.FieldAddress = col+"2";
+                        item.FieldAddress = col + "2";
 
-                        item.ValueAddress = template.TemplateName + "!$"+ $"{col}"+"$3:$" +$"{col}"+"$200";
+                        item.ValueAddress = template.TemplateName + "!$" + $"{col}" + "$3:$" + $"{col}" + "$200";
 
                         item.IsDynamicRange = true;
 
 
-                        
-                        if(item.FieldName!="统一编号")
+
+                        if (item.FieldName != "统一编号")
                             item.RelationField = "统一编号";
 
                         item.DataVerifyRuleGroups = new List<TemplateContentDataVerifyRules>();
-                       
+
 
                         if (field.notNull)
                         {
@@ -375,7 +375,8 @@ namespace Json2ExcelAndXml
                 //        Directory.CreateDirectory(fDpath);
                 //    }
                 //}
-
+                List<Field> flds = new List<Field>();
+                flds = _element.fields;
 
                 foreach (var entity in _databaseModel.entities)
                 {
@@ -386,45 +387,56 @@ namespace Json2ExcelAndXml
                     string shpFilePath, fDpath;
 
                     // 去除"/"
-                    if (entity.defName.Contains("表"))
-                        entity.defName = entity.defName.Replace("表", "");
+                    //if (entity.defName.Contains("表"))
+                    //    entity.defName = entity.defName.Replace("表", "");
 
 
-                    var field= _element.fields.Find(t => entity.defName==t.defName);
+                    var field = _element.fields.Find(t => t.defKey.Contains(entity.defKey));
+
+
+                    //flds.Remove(flds.Find(t => t.defKey == entity.defKey));
+
+
+
                     string filename = "";
                     if (field != null)
                     {
                         filename = field.comment;
                         entity.defName = field.defName;
                     }
-                       
-                    fDpath = openFileDialog.SelectedPath;
-                    fDpath = System.IO.Path.Combine(fDpath, filename);
-                    if (!Directory.Exists(fDpath))
-                    {
-                        Directory.CreateDirectory(fDpath);
 
-                    }
+                    fDpath = openFileDialog.SelectedPath;
+
                     fDpath = System.IO.Path.Combine(fDpath, filename, entity.defName);
                     if (!Directory.Exists(fDpath))
                     {
                         Directory.CreateDirectory(fDpath);
-                        
+
                     }
 
 
                     //表名shp名
-                    shpFilePath = System.IO.Path.Combine(fDpath, entity.defName + ".shp");
+                    shpFilePath = System.IO.Path.Combine(fDpath, entity.defName);
 
                     GdalUtilities gdal = new GdalUtilities();
-                    gdal.convertJsonToShapeFile(entity, shpFilePath, _element);
+                    gdal.convertJsonToShapeFile(entity, fDpath, _element);
                     //ToShp.WriteVectorFileShp(shpRootPath, entity);
                 }
 
 
+            //FileInfo myFile = new FileInfo(@"C:\Users\210320\Desktop\1.txt");
+            //StreamWriter sW = myFile.CreateText();
+            
+            //foreach (var s in flds)
+            //{
+            //    sW.WriteLine(s.comment+" "+s.defKey+" "+ s.defName);                    
+            //}
+            //sW.Close();
 
-               
             }
+
+
+
 
 
         }

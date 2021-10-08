@@ -26,7 +26,7 @@ namespace Json2ExcelAndXml
             string elementType = "";
             foreach (var field in _element.fields)
             {
-                if(entity.defName.Contains(field.defName))
+                if(entity.defKey.Contains(field.defKey))
                 {
                     elementType = field.type;
                     elementCode = field.defKey;
@@ -62,25 +62,29 @@ namespace Json2ExcelAndXml
             //步骤2、创建空间坐标系
             OSGeo.OSR.SpatialReference oSRS = new OSGeo.OSR.SpatialReference("");
 
-            //设置为西安80
-            //oSRS.SetProjCS("UTM 49(WGS84) in northern hemisphere.");           
-            //oSRS.SetWellKnownGeogCS("WGS84");
-            //oSRS.SetUTM(49, 0);
+            ////设置为西安80
+            ////oSRS.SetProjCS("UTM 49(WGS84) in northern hemisphere.");
+            //oSRS.SetWellKnownGeogCS("GCSXian1980");
+            ////oSRS.SetUTM(49, 0);
             ////打印
             //string pszWKT;
             //oSRS.ExportToWkt(out pszWKT);
             //Console.WriteLine(pszWKT);
 
+            //读取一个图层
             ShpRead shpRead = new ShpRead();
             shpRead.InitinalGdal();
-            shpRead.GetShpLayer(@"C:\Users\210320\Desktop\修改数据\JZGSTJ20200916.shp");
-            //shpRead.readLayer
-            //步骤3、创建图层，并添加坐标系，创建一个多边形图层(wkbGeometryType.wkbUnknown,存放任意几何特征)
+            shpRead.GetShpLayer(@"C:\Users\210320\Desktop\touying\DLBHLU01.shp");
 
-            //图层名称，
+            //步骤3、创建图层，并添加坐标系，创建一个多边形图层(wkbGeometryType.wkbUnknown, 存放任意几何特征)
+
             oSRS = shpRead.readLayer.GetSpatialRef();
-           
+
+            if (oDS.GetLayerByName($"{elementCode}")!=null)
+                oDS.DeleteLayer(0) ;
+
             Layer oLayer = oDS.CreateLayer($"{elementCode}", oSRS, GetGeometryType(elementType), null);
+
 
             if (oLayer == null)
             {
@@ -106,7 +110,11 @@ namespace Json2ExcelAndXml
                         if (entity.fields[c].len!=null&&entity.fields[c].len.ToString() != "")
                             len = Convert.ToInt32(entity.fields[c].len);
                         oFieldC.SetWidth(len);
-                        oLayer.CreateField(oFieldC, 1);
+
+                        FeatureDefn oDefn1 = oLayer.GetLayerDefn();
+                        int FieldCount1 = oDefn1.GetFieldCount();
+
+                        oLayer.CreateField(oFieldC, FieldCount1+1);
 
                     }
 
@@ -119,9 +127,10 @@ namespace Json2ExcelAndXml
 
                 throw e;
             }
-            FeatureDefn oDefn = oLayer.GetLayerDefn();
-            Feature oFeature = new Feature(oDefn);
-            oLayer.CreateFeature(oFeature);
+
+            //FeatureDefn oDefn = oLayer.GetLayerDefn();
+            //Feature oFeature = new Feature(oDefn);
+            //oLayer.CreateFeature(oFeature);
             oDS.Dispose();
 
             #region   json 区域
