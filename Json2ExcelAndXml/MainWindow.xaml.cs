@@ -1,5 +1,6 @@
 ﻿using DrillingBuildLibrary;
 using DrillingBuildLibrary.Model;
+using Json2ExcelAndXml.SQL;
 using Microsoft.Win32;
 using System;
 using System.Collections;
@@ -232,6 +233,7 @@ namespace Json2ExcelAndXml
 
                     //实例化模板
                     DrillTemplate template = new DrillTemplate();
+                    template.TemplateKey = entity.defKey;
                     template.TemplateName = entity.defName;
                     template.TemplateType = preName;
                     template.IsInfoTable = true;
@@ -265,6 +267,8 @@ namespace Json2ExcelAndXml
                         {
                             item.FiledDescription = field.comment;
                         }
+
+                        item.FieldKey = entity.fields[i].defKey;
 
                         item.FieldName = entity.fields[i].defName;
 
@@ -375,9 +379,8 @@ namespace Json2ExcelAndXml
                 //        Directory.CreateDirectory(fDpath);
                 //    }
                 //}
-                List<Field> flds = new List<Field>();
-                flds = _element.fields;
 
+                List<string> allTypes = new List<string>();
                 foreach (var entity in _databaseModel.entities)
                 {
 
@@ -391,23 +394,25 @@ namespace Json2ExcelAndXml
                     //    entity.defName = entity.defName.Replace("表", "");
 
 
-                    var field = _element.fields.Find(t => t.defKey.Contains(entity.defKey));
 
-
+                    /* 读取缺失的shp */
                     //flds.Remove(flds.Find(t => t.defKey == entity.defKey));
 
 
-
-                    string filename = "";
-                    if (field != null)
+                    string rootClass="";
+                    foreach (var viewGroup in _databaseModel.viewGroups)
                     {
-                        filename = field.comment;
-                        entity.defName = field.defName;
+                        foreach (var item in viewGroup.refEntities)
+                        {
+                            if (item.Equals(entity.defKey))
+                                rootClass = viewGroup.defKey;
+                        }
+
                     }
 
                     fDpath = openFileDialog.SelectedPath;
 
-                    fDpath = System.IO.Path.Combine(fDpath, filename, entity.defName);
+                    fDpath = System.IO.Path.Combine(fDpath, rootClass, entity.defName);
                     if (!Directory.Exists(fDpath))
                     {
                         Directory.CreateDirectory(fDpath);
@@ -415,23 +420,44 @@ namespace Json2ExcelAndXml
                     }
 
 
-                    //表名shp名
-                    shpFilePath = System.IO.Path.Combine(fDpath, entity.defName);
-
+                    allTypes.Add("");
                     GdalUtilities gdal = new GdalUtilities();
-                    gdal.convertJsonToShapeFile(entity, fDpath, _element);
+
+                    for ( int index=0;index< entity.fields.Count;index++)
+                    {
+                        int c;
+                        for (c=0;c< allTypes.Count;c++)
+                        {
+                            if (entity.fields[index].type.Equals(allTypes[c]))
+                            {
+                                break;
+                            }
+
+                        }
+                        if (c == allTypes.Count)
+                            allTypes.Add(entity.fields[index].type);
+                    }
+
+                    //gdal.convertJsonToShapeFile(entity, fDpath);
+
+                    //if( GetGeometryType(entity.comment)!=null)
+                    //allTypes.Add(entity.comment);
+
+
+                    InputPgDB.CreatSpatialTable(entity);
+                    //InputPgDB.InsertSpatialTable(entity);
                     //ToShp.WriteVectorFileShp(shpRootPath, entity);
                 }
 
+                ///* 读取缺失的shp */
+                //FileInfo myFile = new FileInfo(@"C:\Users\210320\Desktop\1.txt");
+                //StreamWriter sW = myFile.CreateText();
 
-            //FileInfo myFile = new FileInfo(@"C:\Users\210320\Desktop\1.txt");
-            //StreamWriter sW = myFile.CreateText();
-            
-            //foreach (var s in flds)
-            //{
-            //    sW.WriteLine(s.comment+" "+s.defKey+" "+ s.defName);                    
-            //}
-            //sW.Close();
+                //foreach (var s in flds)
+                //{
+                //    sW.WriteLine(s.comment + " " + s.defKey + " " + s.defName);
+                //}
+                //sW.Close();
 
             }
 
@@ -442,6 +468,22 @@ namespace Json2ExcelAndXml
         }
         #endregion
 
+        public static string GetGeometryType(string type)
+        {
+            switch (type)
+            {
+                case "点":
+                    return null;
+
+                case "线":
+                    return null;
+                case "面":
+                    return null;
+
+                default:
+                    return type;
+            }
+        }
 
     }
 }

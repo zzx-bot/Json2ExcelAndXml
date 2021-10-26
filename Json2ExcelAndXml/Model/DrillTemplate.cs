@@ -21,6 +21,8 @@ namespace DrillingBuildLibrary.Model
 
         private object contentRelationShipsField;
 
+        private string templateKeyField;
+
         private string templateNameField;
 
         private string templateTypeField;
@@ -81,6 +83,20 @@ namespace DrillingBuildLibrary.Model
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string TemplateKey
+        {
+            get
+            {
+                return this.templateKeyField;
+            }
+            set
+            {
+                this.templateKeyField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
         public string TemplateType
         {
             get
@@ -108,6 +124,8 @@ namespace DrillingBuildLibrary.Model
         private string relationFieldField;
 
         private string filedDescriptionField;
+
+        private string fieldKeyField;
 
         private string fieldNameField;
 
@@ -176,6 +194,20 @@ namespace DrillingBuildLibrary.Model
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string FieldKey
+        {
+            get
+            {
+                return this.fieldKeyField;
+            }
+            set
+            {
+                this.fieldKeyField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
         public string FieldName
         {
             get
@@ -187,6 +219,8 @@ namespace DrillingBuildLibrary.Model
                 this.fieldNameField = value;
             }
         }
+
+       
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
